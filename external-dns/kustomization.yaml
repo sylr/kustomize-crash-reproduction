@@ -1,0 +1,36 @@
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+- ../base/external-dns
+commonLabels:
+  app: external-dns
+  instance: public
+images:
+- name: k8s.gcr.io/external-dns/external-dns
+  newName: xxx.azurecr.io/external-dns
+  newTag: v0.7.4_sylr.1
+- name: quay.io/sylr/external-dns
+  newName: xxx.azurecr.io/external-dns
+  newTag: v0.7.4_sylr.1
+secretGenerator:
+- name: azure-config-file
+  behavior: replace
+  files:
+  - assets/azure.json
+patches:
+- target:
+    group: apps
+    version: v1
+    kind: Deployment
+    name: external-dns
+  patch: |-
+    - op: replace
+      path: /spec/template/spec/containers/0/args
+      value:
+      - --txt-owner-id="aks"
+      - --txt-prefix=external-dns-
+      - --source=service
+      - --provider=azure
+      - --registry=txt
+      - --domain-filter=dev.company.com

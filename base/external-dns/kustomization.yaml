@@ -1,0 +1,19 @@
+---
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+- clusterrole.yml
+- clusterrolebinding.yml
+- deployment.yml
+- serviceaccount.yml
+commonLabels:
+  app: external-dns
+  instance: public
+images:
+- name: k8s.gcr.io/external-dns/external-dns
+  newName: quay.io/sylr/external-dns
+  newTag: v0.7.4-73-g00a9a0c7
+secretGenerator:
+- name: azure-config-file
+  files:
+  - assets/azure.json
